@@ -1,44 +1,43 @@
 import Animated, {
   useSharedValue,
   withTiming,
-  useAnimatedStyle,
-  Easing,
+  useAnimatedProps,
+  withRepeat,
 } from 'react-native-reanimated';
-import {View, Button} from 'react-native';
-import React from 'react';
+import {View} from 'react-native';
+import React, {useEffect} from 'react';
+
+import Svg, {Text} from 'react-native-svg';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export default function AnimatedStyleUpdateExample(props) {
-  const randomWidth = useSharedValue(10);
+  const animatedStroke = useSharedValue(10);
 
-  const config = {
-    duration: 500,
-    easing: Easing.bezier(0.5, 0.01, 0, 1),
-  };
+  const animatedProps = useAnimatedProps(() => ({
+    strokeWidth: 3 + 5 * animatedStroke.value,
+    strokeOpacity: animatedStroke.value,
+  }));
 
-  const style = useAnimatedStyle(() => {
-    return {
-      width: withTiming(randomWidth.value, config),
-    };
-  });
-
+  useEffect(() => {
+    animatedStroke.value = withRepeat(withTiming(1, {duration: 500}), -1, true);
+  }, [animatedStroke]);
   return (
     <View
       style={{
         flex: 1,
-        flexDirection: 'column',
       }}>
-      <Animated.View
-        style={[
-          {width: 100, height: 80, backgroundColor: 'black', margin: 30},
-          style,
-        ]}
-      />
-      <Button
-        title="toggle"
-        onPress={() => {
-          randomWidth.value = Math.random() * 350;
-        }}
-      />
+      <Svg width="100%" height="100%">
+        <AnimatedText
+          x={100}
+          y={100}
+          animatedProps={animatedProps}
+          stroke="red"
+          fill="black"
+          fontSize={100}>
+          hello
+        </AnimatedText>
+      </Svg>
     </View>
   );
 }
